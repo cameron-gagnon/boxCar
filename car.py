@@ -1,55 +1,42 @@
-#! /usr/bin/python3.4
+#! /usr/bin/python3
 import RPi.GPIO as gpio
 import time
+import Stepper
+
+STEPS_PER_REV = 200;
+RPM = 110 # speed 
 
 def main():
-    init()
-    car()
+    myStepper = init()
+    car(myStepper)
 
-def car():
+def car(myStepper):
 
     while True:
     
         try:
             direction = input("Enter direction ")
             if direction == 'f':
-                forward(2)
+                print("Forward")
+                myStepper.step(STEPS_PER_REV)
             elif direction == 'r':
-                reverse(2)
-                
+                myStepper.step(-STEPS_PER_REV)
+                print("Backward")
             elif direction == 'q':
+                print("Quit")
+                gpio.cleanup()
                 break 
     
         except KeyboardInterrupt:
+            gpio.cleanup()
             break
 
 
 def init():
     gpio.setmode(gpio.BOARD)
-    gpio.setup(29, gpio.OUT)
-    gpio.setup(31, gpio.OUT)
-    gpio.setup(33, gpio.OUT)
-    gpio.setup(35, gpio.OUT)
-
-def forward(tf):
-    print("Moving foward")
-    init()
-    gpio.output(29, True)
-    gpio.output(31, False)
-    gpio.output(33, True)
-    gpio.output(35, False)
-    time.sleep(tf)
-    gpio.cleanup()
-
-def reverse(tf):
-    print("Moving backward")
-    init()
-    gpio.output(29, False)
-    gpio.output(31, True)
-    gpio.output(33, False)
-    gpio.output(35, True)
-    time.sleep(tf)
-    gpio.cleanup()
+    myStepper = Stepper.Stepper(STEPS_PER_REV, 8, 10, 16, 18)
+    myStepper.setSpeed(RPM)
+    return myStepper
 
 if __name__ == "__main__":
     main()
