@@ -1,7 +1,16 @@
-#! /usr/bin/python3.4
+#! /usr/bin/python3
+
 import RPi.GPIO as gpio
 import time
 import Tkinter as tk
+
+# pins
+TRIG = 18
+ECHO = 3
+L_WHEEL_P = 16
+L_WHEEL_N = 12
+R_WHEEL_P = 10
+R_WHEEL_N = 8
 
 STOP_DISTANCE = 20
 
@@ -13,6 +22,7 @@ def car(event):
     direction = event.char.lower()
     st = 0.030 # sleep time
     rt = 0.500 # reverse time 
+
     try:
         if direction == 'w':
             forward(st)
@@ -40,7 +50,6 @@ def car(event):
             reverse(rt)
             
             
-
     except KeyboardInterrupt:
         gpio.cleanup()
         break
@@ -52,34 +61,51 @@ def main_init():
 
 def pin_init():
     gpio.setmode(gpio.BOARD)
-    gpio.setup(29, gpio.OUT)
-    gpio.setup(31, gpio.OUT)
-    gpio.setup(33, gpio.OUT)
-    gpio.setup(35, gpio.OUT)
+    # ultrasonic sensor pins
+    gpio.setup(TRIG, gpio.OUT)
+    gpio.setup(ECHO, gpio.IN)    
+    #gpio.output(TRIG, False)
 
-def forward(tf):
-    print("Moving foward")
-    init()
-    gpio.output(29, True)
-    gpio.output(31, False)
-    gpio.output(33, True)
-    gpio.output(35, False)
-    time.sleep(tf)
+    # motor pins
+    gpio.setup(L_WHEEL_P, gpio.OUT)
+    gpio.setup(L_WHEEL_N, gpio.OUT)
+    gpio.setup(R_WHEEL_P, gpio.OUT)
+    gpio.setup(R_WHEEL_N, gpio.OUT)
+
+
+# moves the car foward
+def forward():
+    pin_init()
+    gpio.output(L_WHEEL_P, False)
+    gpio.output(L_WHEEL_N, True)
+    gpio.output(R_WHEEL_P, False)
+    gpio.output(R_WHEEL_N, True)
+    time.sleep(3)
     gpio.cleanup()
 
-def reverse(tf):
-    print("Moving backward")
-    init()
-    gpio.output(29, False)
-    gpio.output(31, True)
-    gpio.output(33, False)
-    gpio.output(35, True)
-    time.sleep(tf)
+def ping():
+    # pin_initializes the ultrasonic distance
+    # sensor to begin its ping program
+    gpio.output(TRIG, True)
+    time.sleep(0.00001)
+    gpio.output(TRIG, False)
+
+    # gets the last time that our echo was low
+    # basically just before it goes high
+    while gpio.input(ECHO) == 0:
+        pulse_start = time.time()
+
+    # tells us the latest time our echo pulse
+    # was high
+    while gpio.input(ECHO) == 1:
+        pulse_stop = time.time()
+
+    # stop the signals
     gpio.cleanup()
 
 def pivot_left(tf):
     print("Pivot left")
-    init()
+    pin_init()
     gpio.output(29, False)
     gpio.output(31, True)
     gpio.output(33, True)
@@ -89,7 +115,7 @@ def pivot_left(tf):
 
 def pivot_right(tf):
     print("Pivot right")
-    init()
+    pin_init()
     gpio.output(29, True)
     gpio.output(31, False)
     gpio.output(33, False)
@@ -99,7 +125,7 @@ def pivot_right(tf):
 
 def turn_right(tf):
     print("Turning right")
-    init()
+    pin_init()
     gpio.output(29, True)
     gpio.output(31, False)
     gpio.output(33, False)
@@ -109,13 +135,31 @@ def turn_right(tf):
 
 def turn_left(tf):
     print("Turning left")
-    init()
+    pin_init()
     gpio.output(29, False)
     gpio.output(31, False)
     gpio.output(33, True)
     gpio.output(35, False)
     time.sleep(tf)
     gpio.cleanup()
+    
+    # get length of the pulse
+    pulse_length = pulse_stop - pulse_start
+
+    # 34300 = Dist/ (time/ 2) simplifies to
+    # 17150 = dist / time
+    # 17150 * time = distance
+    distance = pulse_length * 17150
+
+    # round the distance in cm
+    distance = round(distance, 2)
+    
+    return distance
+
+   
+    
+    #print("Letting sensor settle")
+    #time.sleep(2)
 
 if __name__ == "__main__":
     main()
