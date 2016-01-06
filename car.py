@@ -18,11 +18,13 @@ def main():
     main_init()
 
 def car(event):
-    pin_init()
-    direction = event.char.lower()
     st = 0.030 # sleep time
     rt = 0.500 # reverse time 
 
+    pin_init()
+    direction = event.char.lower()
+    print("Key is: " + direction)
+    
     try:
         if direction == 'w':
             forward(st)
