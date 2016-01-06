@@ -75,7 +75,6 @@ def pin_init():
 
 # moves the car foward
 def forward():
-    pin_init()
     gpio.output(L_WHEEL_P, False)
     gpio.output(L_WHEEL_N, True)
     gpio.output(R_WHEEL_P, False)
@@ -105,7 +104,6 @@ def ping():
 
 def pivot_left(tf):
     print("Pivot left")
-    pin_init()
     gpio.output(29, False)
     gpio.output(31, True)
     gpio.output(33, True)
@@ -115,7 +113,6 @@ def pivot_left(tf):
 
 def pivot_right(tf):
     print("Pivot right")
-    pin_init()
     gpio.output(29, True)
     gpio.output(31, False)
     gpio.output(33, False)
@@ -125,7 +122,6 @@ def pivot_right(tf):
 
 def turn_right(tf):
     print("Turning right")
-    pin_init()
     gpio.output(29, True)
     gpio.output(31, False)
     gpio.output(33, False)
@@ -135,7 +131,6 @@ def turn_right(tf):
 
 def turn_left(tf):
     print("Turning left")
-    pin_init()
     gpio.output(29, False)
     gpio.output(31, False)
     gpio.output(33, True)
